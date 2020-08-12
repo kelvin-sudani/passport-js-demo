@@ -10,7 +10,7 @@ const logger = require("morgan");
 const passport = require("./passport/index");
 const register = require("./routes/register");
 const login = require("./routes/login");
-
+const logout = require("./routes/logout");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 
@@ -45,10 +45,21 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+//If user is logged in, passport.js will create user object in req for every request in express.js, ...
+//... which you can check for existence in any middleware:
+function isLoggedIn(req, res, next) {
+  if (req.user) {
+    next();
+  } else {
+    res.send("Please log in first");
+  }
+}
+
 app.use("/", indexRouter);
 app.use("/register", register);
 app.use("/login", login);
-app.use("/users", usersRouter);
+app.use("/logout", isLoggedIn, logout);
+app.use("/users", isLoggedIn, usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
